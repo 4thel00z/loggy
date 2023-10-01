@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -16,6 +17,14 @@ type LogEntry struct {
 	Message     string `json:"message"`
 	Environment string `json:"environment"`
 	AppVersion  string `json:"app_version"`
+	DeviceName  string `json:"device_name"`
+}
+
+func (l LogEntry) String() string {
+	return fmt.Sprintf(
+		"Environment: %s AppVersion: %s DeviceName: %s Payload: { \"%s\" : \"%s\" }",
+		l.Environment, l.AppVersion, l.DeviceName, l.Key, l.Message,
+	)
 }
 
 type ProblemDetails struct {

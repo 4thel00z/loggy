@@ -42,7 +42,14 @@ func applyMigrations(db *sql.DB) error {
 }
 
 func insertLog(db *sql.DB, logEntry LogEntry) error {
-	_, err := db.Exec(`INSERT INTO logs (key, message, environment, app_version) VALUES (?, ?, ?, ?)`, logEntry.Key, logEntry.Message, logEntry.Environment, logEntry.AppVersion)
+	_, err := db.Exec(
+		`INSERT INTO logs (key, message, environment, app_version, device_name ) VALUES (?, ?, ?, ?, ?)`,
+		logEntry.Key,
+		logEntry.Message,
+		logEntry.Environment,
+		logEntry.AppVersion,
+		logEntry.DeviceName,
+	)
 	return err
 }
 
