@@ -1,8 +1,9 @@
 package main
 
 import (
-	"database/sql"
+	_ "database/sql"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"log"
@@ -20,15 +21,15 @@ func handleGetErrors(config *Config) context.Handler {
 	}
 }
 
-func handleGetLogs(db *sql.DB) context.Handler {
+func handleGetLogs(db *sqlx.DB) context.Handler {
 	return func(ctx *context.Context) {
 		limit := ctx.URLParamIntDefault("limit", 10)  // default limit is 10
 		offset := ctx.URLParamIntDefault("offset", 0) // default offset is 0
 		// Initialize a slice to hold the retrieved log entries.
-		var logEntries []LogEntry
+		logEntries := []LogEntry{}
 
 		// Query the database to retrieve log entries, with the given limit and offset.
-		rows, err := db.Query("SELECT key, message, environment, app_version FROM logs LIMIT ? OFFSET ?", limit, offset)
+		rows, err := db.Queryx("SELECT key, message, environment, app_version FROM logs LIMIT ? OFFSET ?", limit, offset)
 		if err != nil {
 			problem := ProblemDetails{
 				Type:   "/errors#internal-server-error",
@@ -45,7 +46,7 @@ func handleGetLogs(db *sql.DB) context.Handler {
 		// Iterate over the result set and append each row to the logEntries slice.
 		for rows.Next() {
 			var entry LogEntry
-			if err := rows.Scan(&entry.Key, &entry.Message, &entry.Environment, &entry.AppVersion, &entry.DeviceName); err != nil {
+			if err := rows.StructScan(&entry); err != nil {
 				log.Printf("Error scanning row: %v", err)
 				continue
 			}
@@ -70,7 +71,7 @@ func handleGetLogs(db *sql.DB) context.Handler {
 	}
 }
 
-func handlePostLogs(db *sql.DB) context.Handler {
+func handlePostLogs(db *sqlx.DB) context.Handler {
 	return func(ctx iris.Context) {
 		var logEntry LogEntry
 		if err := ctx.ReadJSON(&logEntry); err != nil {
@@ -104,8 +105,8 @@ func handlePostLogs(db *sql.DB) context.Handler {
 	}
 }
 
-func registerRoutes(app *iris.Application, db *sql.DB, config *Config) {
-	app.Get("/logs", handlePostLogs(db))
+func registerRoutes(app *iris.Application, db *sqlx.DB, config *Config) {
+	app.Get("/logs", handleGetLogs(db))
 	app.Post("/logs", handlePostLogs(db))
 	app.Get("/errors", handleGetErrors(config))
 }

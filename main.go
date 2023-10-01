@@ -1,8 +1,8 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"log"
 
 	"github.com/kataras/iris/v12"
@@ -25,7 +25,7 @@ func main() {
 		log.Fatalf("Error ensuring database path: %s", err.Error())
 	}
 
-	db, err := sql.Open("sqlite3", config.DatabasePath)
+	db, err := sqlx.Open("sqlite3", config.DatabasePath)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -13,11 +13,11 @@ type Config struct {
 }
 
 type LogEntry struct {
-	Key         string `json:"key"`
-	Message     string `json:"message"`
-	Environment string `json:"environment"`
-	AppVersion  string `json:"app_version"`
-	DeviceName  string `json:"device_name"`
+	Key         string `json:"key" db:"key"`
+	Message     string `json:"message" db:"message"`
+	Environment string `json:"environment" db:"environment"`
+	AppVersion  string `json:"app_version" db:"app_version"`
+	DeviceName  string `json:"device_name" db:"device_name"`
 }
 
 func (l LogEntry) String() string {

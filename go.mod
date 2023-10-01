@@ -3,6 +3,7 @@ module github.com/4thel00z/loggy
 go 1.20
 
 require (
+	github.com/jmoiron/sqlx v1.3.5
 	github.com/kataras/iris/v12 v12.2.7
 	github.com/mattn/go-sqlite3 v1.14.17
 )

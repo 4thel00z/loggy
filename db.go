@@ -1,13 +1,13 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"os"
 	"path/filepath"
 )
 
-func applyMigrations(db *sql.DB) error {
+func applyMigrations(db *sqlx.DB) error {
 	// Creating the table with created_at and updated_at columns
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS logs (
@@ -41,7 +41,7 @@ func applyMigrations(db *sql.DB) error {
 	return nil
 }
 
-func insertLog(db *sql.DB, logEntry LogEntry) error {
+func insertLog(db *sqlx.DB, logEntry LogEntry) error {
 	_, err := db.Exec(
 		`INSERT INTO logs (key, message, environment, app_version, device_name ) VALUES (?, ?, ?, ?, ?)`,
 		logEntry.Key,
