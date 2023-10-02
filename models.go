@@ -34,7 +34,7 @@ type ProblemDetails struct {
 	Detail string `json:"detail"`
 }
 
-func getConfigPath() (string, error) {
+func GetConfigPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", nil
@@ -46,7 +46,7 @@ func getConfigPath() (string, error) {
 	return filepath.Join(configDir, "config.json"), nil
 
 }
-func ensureConfig(configFile string) (*Config, error) {
+func EnsureConfig(configFile string) (*Config, error) {
 
 	config := &Config{
 		ErrorDescriptions: map[string]string{

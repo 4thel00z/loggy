@@ -1,13 +1,63 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"os"
 	"path/filepath"
+	"time"
 )
 
-func applyMigrations(db *sqlx.DB) error {
+func OpenDatabase(err error, config *Config) (*sqlx.DB, error) {
+	db, err := sqlx.Open("sqlite3", config.DatabasePath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Applying SQLite pragmas when opening the DB
+	_, err = db.Exec(`PRAGMA journal_mode = wal;`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set pragma journal_mode: %w", err)
+	}
+
+	_, err = db.Exec(`PRAGMA synchronous = normal;`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set pragma synchronous: %w", err)
+	}
+
+	_, err = db.Exec(`PRAGMA foreign_keys = on;`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set pragma foreign_keys: %w", err)
+	}
+
+	return db, nil
+}
+
+// StartWALCheckpointer start the checkpointing goroutine
+func StartWALCheckpointer(ctx context.Context, db *sqlx.DB, interval time.Duration) {
+	ticker := time.NewTicker(interval * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			// Context has been canceled, so stop the coroutine
+			fmt.Println("Stopping checkpointing coroutine.")
+			return
+		case <-ticker.C:
+
+			_, err := db.Exec(`PRAGMA wal_checkpoint(FULL);`)
+			if err != nil {
+				fmt.Println("Error during checkpoint:", err)
+			} else {
+				fmt.Println("Checkpoint successful.")
+			}
+		}
+	}
+}
+
+func ApplyMigrations(db *sqlx.DB) error {
 	// Creating the table with created_at and updated_at columns
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS logs (
@@ -53,7 +103,7 @@ func insertLog(db *sqlx.DB, logEntry LogEntry) error {
 	return err
 }
 
-func ensureDatabasePath(config *Config) error {
+func EnsureDatabasePath(config *Config) error {
 	if err := os.MkdirAll(filepath.Dir(config.DatabasePath), 0755); err != nil {
 		return err
 	}

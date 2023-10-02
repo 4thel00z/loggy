@@ -105,7 +105,7 @@ func handlePostLogs(db *sqlx.DB) context.Handler {
 	}
 }
 
-func registerRoutes(app *iris.Application, db *sqlx.DB, config *Config) {
+func RegisterRoutes(app *iris.Application, db *sqlx.DB, config *Config) {
 	app.Get("/logs", handleGetLogs(db))
 	app.Post("/logs", handlePostLogs(db))
 	app.Get("/errors", handleGetErrors(config))
