@@ -87,7 +87,7 @@ func handlePostLogs(db *sqlx.DB) context.Handler {
 		}
 		log.Printf("Received log: %s", logEntry.String())
 
-		err := insertLog(db, logEntry)
+		err := InsertLog(db, logEntry)
 		if err != nil {
 			problem := ProblemDetails{
 				Type:   "/errors#internal-server-error",

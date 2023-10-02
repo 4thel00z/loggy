@@ -67,6 +67,7 @@ func ApplyMigrations(db *sqlx.DB) error {
 			key TEXT, 
 			message TEXT, 
 			environment TEXT, 
+			device_name TEXT, 
 			app_version TEXT, 
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, 
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -93,7 +94,7 @@ func ApplyMigrations(db *sqlx.DB) error {
 	return nil
 }
 
-func insertLog(db *sqlx.DB, logEntry LogEntry) error {
+func InsertLog(db *sqlx.DB, logEntry LogEntry) error {
 	_, err := db.Exec(
 		`INSERT INTO logs (key, message, environment, app_version, device_name ) VALUES (?, ?, ?, ?, ?)`,
 		logEntry.Key,
