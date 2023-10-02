@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/jmoiron/sqlx"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 func OpenDatabase(err error, config *Config) (*sqlx.DB, error) {
@@ -38,7 +40,7 @@ func OpenDatabase(err error, config *Config) (*sqlx.DB, error) {
 func StartWALCheckpointer(ctx context.Context, db *sqlx.DB, interval time.Duration) {
 	ticker := time.NewTicker(interval * time.Second)
 	defer ticker.Stop()
-
+	log.Println("Starting WALCheckpointer")
 	for {
 		select {
 		case <-ctx.Done():
