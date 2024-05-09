@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/4thel00z/loggy"
 	"log"
 	"strconv"
 	"time"
@@ -12,22 +13,22 @@ import (
 )
 
 func main() {
-	configPath, err := GetConfigPath()
+	configPath, err := loggy.GetConfigPath()
 	if err != nil {
 		log.Fatalf("Could not retrieve config path: %s", err.Error())
 	}
 
-	config, err := EnsureConfig(configPath)
+	config, err := loggy.EnsureConfig(configPath)
 	if err != nil {
 		log.Fatalf("Error ensuring config: %s", err.Error())
 	}
 
-	err = EnsureDatabasePath(config)
+	err = loggy.EnsureDatabasePath(config)
 	if err != nil {
 		log.Fatalf("Error ensuring database path: %s", err.Error())
 	}
 
-	db, err := OpenDatabase(err, config)
+	db, err := loggy.OpenDatabase(err, config)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -46,21 +47,21 @@ func main() {
 		}
 	}()
 
-	interval, err := strconv.ParseInt(EnvOrDefault("INTERVAL", "15"), 10, 64)
+	interval, err := strconv.ParseInt(loggy.EnvOrDefault("INTERVAL", "15"), 10, 64)
 	if err != nil {
 		interval = 15
 	}
 
-	go StartWALCheckpointer(ctx, db, time.Duration(interval))
+	go loggy.StartWALCheckpointer(ctx, db, time.Duration(interval))
 
-	if err := ApplyMigrations(db); err != nil {
+	if err := loggy.ApplyMigrations(db); err != nil {
 		log.Fatal(err)
 	}
 
 	app := iris.Default()
-	RegisterRoutes(app, db, config)
-	host := EnvOrDefault("HOST", "127.0.0.1")
-	port := EnvOrDefault("PORT", "12345")
+	loggy.RegisterRoutes(app, db, config)
+	host := loggy.EnvOrDefault("HOST", "127.0.0.1")
+	port := loggy.EnvOrDefault("PORT", "12345")
 	if err := app.Listen(fmt.Sprintf("%s:%s", host, port)); err != nil {
 		log.Fatal(err)
 	}

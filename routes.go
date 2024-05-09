@@ -1,4 +1,4 @@
-package main
+package loggy
 
 import (
 	_ "database/sql"
@@ -23,13 +23,17 @@ func handleGetErrors(config *Config) context.Handler {
 
 func handleGetLogs(db *sqlx.DB) context.Handler {
 	return func(ctx *context.Context) {
-		limit := ctx.URLParamIntDefault("limit", 10)  // default limit is 10
+		limit := ctx.URLParamIntDefault("limit", 100) // default limit is 100
 		offset := ctx.URLParamIntDefault("offset", 0) // default offset is 0
 		// Initialize a slice to hold the retrieved log entries.
 		logEntries := []LogEntry{}
 
 		// Query the database to retrieve log entries, with the given limit and offset.
-		rows, err := db.Queryx("SELECT key, message, environment, app_version FROM logs LIMIT ? OFFSET ?", limit, offset)
+		rows, err := db.Queryx(`
+		SELECT key, message, device_name, environment, app_version, created_at, updated_at
+		FROM logs
+		LIMIT ?
+		OFFSET ?`, limit, offset)
 		if err != nil {
 			problem := ProblemDetails{
 				Type:   "/errors#internal-server-error",

@@ -17,11 +17,17 @@ YELLOW=\033[0;33m
 NC=\033[0m # No Color
 
 # Help
-## build: Compiles the Go files.
-build:
-	@echo "Building..."
-	@GOBIN=$(GOBIN) go build -o $(GOBIN)/$(BINARY_NAME) $(GOFILES)
-	@echo "Build complete!"
+## logctl: Compiles the log viewer command line tool.
+logctl: cmd/logctl/*.go
+	@echo "Building $*..."
+	@GOBIN=$(GOBIN) go build -o $(GOBIN)/logctl ./cmd/logctl
+	@echo "$* build complete!"
+
+## loggy: Compiles the loggy application.
+loggy: cmd/loggy/*.go
+	@echo "Building $*..."
+	@GOBIN=$(GOBIN) go build -o $(GOBIN)/loggy ./cmd/loggy
+	@echo "$* build complete!"
 
 ## run: Builds and runs the application.
 run: build
@@ -60,4 +66,5 @@ help:
 	@grep -E '^##' $(MAKEFILE_LIST) | sed -e 's/## //g' -e 's/:/|/' | awk 'BEGIN {FS = "|";} {printf "\033[0;32m%-30s\033[0;33m %s\033[0m\n", $$1, $$2;}'
 
 
-.PHONY: build run install clean test help
+.PHONY: run install clean test help $(GOBIN)/%
+

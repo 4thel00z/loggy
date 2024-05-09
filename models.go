@@ -1,10 +1,12 @@
-package main
+package loggy
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/charmbracelet/bubbles/list"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Config struct {
@@ -13,16 +15,37 @@ type Config struct {
 }
 
 type LogEntry struct {
-	Key         string `json:"key" db:"key"`
-	Message     string `json:"message" db:"message"`
-	Environment string `json:"environment" db:"environment"`
-	AppVersion  string `json:"app_version" db:"app_version"`
-	DeviceName  string `json:"device_name" db:"device_name"`
+	Key         string    `json:"key" db:"key"`
+	Message     string    `json:"message" db:"message"`
+	Environment string    `json:"environment" db:"environment"`
+	AppVersion  string    `json:"app_version" db:"app_version"`
+	DeviceName  string    `json:"device_name" db:"device_name"`
+	CreatedAt   time.Time `json:"created_at,omitempty" db:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty" db:"updated_at"`
+}
+
+func (l LogEntry) Title() string {
+	return fmt.Sprintf("[%s] %s - %s@%s %sv: %s", l.Key, l.CreatedAt.Format(time.DateTime), l.DeviceName, l.Environment, l.AppVersion)
+}
+func (l LogEntry) Description() string { return l.Message }
+
+type LogEntries []LogEntry
+
+func (l LogEntry) FilterValue() string {
+	return l.String()
+}
+
+func (l LogEntries) ToItems() []list.Item {
+	var items []list.Item
+	for _, i2 := range l {
+		items = append(items, i2)
+	}
+	return items
 }
 
 func (l LogEntry) String() string {
 	return fmt.Sprintf(
-		"Environment: %s AppVersion: %s DeviceName: %s Payload: { \"%s\" : \"%s\" }",
+		"[%s] %s %s %s: %s",
 		l.Environment, l.AppVersion, l.DeviceName, l.Key, l.Message,
 	)
 }
